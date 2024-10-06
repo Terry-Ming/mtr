@@ -1,6 +1,7 @@
 * {
   margin: 0;
   box-sizing: border-box;
+  font-family: system-ui;
 }
 
 header {
@@ -22,9 +23,13 @@ header {
   font-weight: 900;
   font-size: 20px;
   color: white;
+  border: 3px solid black;
+  transition: background-color 0.3s, color 0.3s;
 }
 #selecter div:hover {
   cursor: pointer;
+  background-color: white;
+  color: black;
 }
 
 #selecter {
@@ -35,21 +40,29 @@ header {
   justify-content: space-between;
   flex-wrap: wrap;
 }
+#time {
+  text-align: center;
+}
 
-#content {
+#content,
+#lower {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
   margin-left: 10%;
   margin-right: 10%;
   gap: 10px;
+  margin-top: 20px;
 }
 
-#content div {
-  width: 150px;
+#content div,
+#lower div {
+  display: block;
+  width: 250px;
   height: 100px;
-  display: flex;
   justify-content: center;
   padding: 5px;
   border-radius: 10px;
+  color: #ffffff;
+  border: 1.5px solid black;
 }

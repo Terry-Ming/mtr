@@ -186,9 +186,16 @@ const info = {
 // let line = "KTL";
 // let sta = "HOM";
 
+let abortController;
+
 async function getdata(api) {
+  if (abortController) {
+    abortController.abort();
+  }
+  abortController = new AbortController();
+  const signal = abortController.signal;
   try {
-    const response = await fetch(api);
+    const response = await fetch(api, { signal });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`); // Check for HTTP errors
     }
@@ -208,20 +215,34 @@ function headerDiv() {
     newDiv.style.backgroundColor = info[x].color;
     newDiv.addEventListener("click", async function () {
       document.getElementById("content").innerHTML = "";
-
+      document.getElementById("lower").innerHTML = "";
+      timeContent();
       const content = document.getElementById("content");
+      const lower = document.getElementById("lower");
       let line = this.className;
       for (const y of info[line].sta) {
         const contentDiv = document.createElement("div");
+        const lowerDiv = document.createElement("div");
         let station = y.code;
         let staName = y.name;
-        contentDiv.textContent += staName;
         contentDiv.style.backgroundColor = info[x].color;
         let api = `https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=${line}&sta=${station}`;
         const apiData = await getdata(api);
-        console.log("API Data:", apiData.data);
 
-        content.appendChild(contentDiv);
+        let update = apiData.data[`${line}-${station}`];
+        if (update && update.UP && update.UP.length > 0 && update.UP[0]) {
+          contentDiv.innerHTML += `${staName}<br>`;
+          contentDiv.innerHTML += `Estimated arrival time:<br> ${update.UP[0].time}<br>`;
+          contentDiv.innerHTML += `Platform of arrived train: No.${update.UP[0].plat}`;
+          content.appendChild(contentDiv);
+        }
+        if (update && update.DOWN && update.DOWN.length > 0 && update.DOWN[0]) {
+          lowerDiv.style.backgroundColor = info[x].color;
+          lowerDiv.innerHTML += `${staName}<br>`;
+          lowerDiv.innerHTML += `Estimated arrival time:<br> ${update.DOWN[0].time}<br>`;
+          lowerDiv.innerHTML += `Platform of arrived train: No.${update.DOWN[0].plat}`;
+          lower.appendChild(lowerDiv);
+        }
       }
     });
 
@@ -229,7 +250,14 @@ function headerDiv() {
   }
 }
 
-headerDiv();
+async function timeContent() {
+  let api = "https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php";
+  const response = await fetch(api);
+  const result = await response.json();
 
-function timeContent() {}
-// mtr();
+  document.getElementById(
+    "time"
+  ).innerText = `Last updated time: ${result.timestamp}`;
+}
+
+headerDiv();
